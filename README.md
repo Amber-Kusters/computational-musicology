@@ -19,3 +19,5 @@ To start off I wanted to see what the level of valence is according to Spotify i
 Then I wanted to look at the differences between the happy and sad playlists, and look at features that might influence valence. Therefore, this next visualisation includes valence, danceablity and energy. Danceability rates how suitible a song is to dance to (1.0 being very danceable) and energy represents the intensity or activity, which is calculated with loudness, timbre, dynamic range, etc. (1.0 being very energetic). In this visualisation it is seen that the distribution of valence is broad in both happy and sad playlists, but there is also a division showing that overall happy music has higher valence than sad music, which was also expected. It also shows that positive music has a higher danceability, and the energy of positive music is mostly above the 0.50. Whereas only the blue dots (sad songs) have an energy of 0.25. 
 
 ![image](https://github.com/Amber-Kusters/computational-musicology/blob/main/allsongs_valence_danceability_energy.png)
+
+Next, I want to look at the artists in the playlist, but I haven't been able to unpack the artist name from the playlist data yet.
