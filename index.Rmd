@@ -34,7 +34,7 @@ library(compmus)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### Patterns in the saddest song of the corpus
+### Patterns in the saddest song of the corpus {data-commentary-width=500}
 ```{r week 9, echo=FALSE}
 maria <-
   get_tidy_audio_analysis("0u4rkpmNtgcFxYHepnVF4v") |>
@@ -96,8 +96,7 @@ I believe the tracks in my corpus are very representative as the playlist "Sad *
 
 Typical tracks in my corpus for sad songs are Don't Speak by No Doubt, songs by Billie Eilish, Lana del Rey, or Adele. Looking at the happy playlist by Spotify, it varies a lot from feel good songs to real party anthems.
 
-### Which playlist is more sad?
-
+### Which playlist is more sad? {data-commentary-width=600}
 
 ```{r load playlists, echo=FALSE}
 sadplaylist <- get_playlist_audio_features("", "3h7anos6b21Kvv7N5Sj9v6")
