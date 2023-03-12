@@ -79,9 +79,8 @@ This week assignment is this page and the next!
 
 The graph on the left compares the two sad playlists by looking at the timbre coefficients that Spotify uses. On most of these coefficients, it looks like the playlist are fairly similar, only deviating a little bit. However, when looking at the second timbre coefficient, it comes to my attention that the Life Sucks playlist, created by Spotify has a bigger range of brightness. The documentation that explains a part of the timbre coefficients refers to this second coefficient as brightness. This would mean that the Life Sucks playlist has more songs that are interpreted as brighter than the Sad Bitch Hour playlist. This actually also confirms that the playlist created by Spotify contains more happier songs than the one created by my friend, which was also displayed in the histogram comparing which playlist is more sad.
 
-### Week 11: Consistent keygrams
-
-```{r, echo = FALSE}
+### Week 11: Consistent keygrams {data-commentary-width=500}
+```{r templates, echo = FALSE}
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
 }
@@ -166,7 +165,9 @@ key_templates <-
     "G#:min", circshift(minor_key, 8),
     "B:maj", circshift(major_key, 11),
     "D#:min", circshift(minor_key, 3))
+```
 
+```{r keygram, echo = FALSE}
 iwouldstay <-
   get_tidy_audio_analysis("3GZFKiGVYv3SBQ6PLf3JgF") |>
   compmus_align(sections, segments) |>
@@ -180,7 +181,7 @@ iwouldstay <-
       )
   )
 
-iwouldstay |> 
+keygramkrezip <- iwouldstay |> 
   compmus_match_pitch_template(
     key_templates,         # Change to chord_templates if descired
     method = "euclidean",  # Try different distance metrics
@@ -193,7 +194,9 @@ iwouldstay |>
   scale_fill_viridis_c(guide = "none") +
   theme_minimal() +
   labs(x = "Time (s)", y = "", title = "Keygram of I Would Stay by Krezip")
+keygramkrezip
 ```
+
 ***
 
 It stood out that when looking at different keygrams for sad music, there isn't much variation in the key throughout the song. This graphs gives an example, showing that the majority is in D major key. It is a keygram of I Would Stay by Krezip, which is a very famous sad song in the Netherlands. In my final portfolio I will try to show multiple keygrams from the sad playlist to give a more complete view of the consistancy in key throughout the songs.
