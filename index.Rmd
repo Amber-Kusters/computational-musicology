@@ -1,7 +1,7 @@
 ---
 title: "Computational Musicology"
 author: "Amber Kusters"
-date: '2023-02-27'
+date: '2023-03-12'
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
@@ -79,7 +79,7 @@ This week assignment is this page and the next!
 
 The graph on the left compares the two sad playlists by looking at the timbre coefficients that Spotify uses. On most of these coefficients, it looks like the playlist are fairly similar, only deviating a little bit. However, when looking at the second timbre coefficient, it comes to my attention that the Life Sucks playlist, created by Spotify has a bigger range of brightness. The documentation that explains a part of the timbre coefficients refers to this second coefficient as brightness. This would mean that the Life Sucks playlist has more songs that are interpreted as brighter than the Sad Bitch Hour playlist. This actually also confirms that the playlist created by Spotify contains more happier songs than the one created by my friend, which was also displayed in the histogram comparing which playlist is more sad.
 
-### Week 11: Consistent keygrams {data-commentary-width=500}
+### Week 11: Consistent keygrams
 
 ```{r, echo = FALSE}
 circshift <- function(v, n) {
