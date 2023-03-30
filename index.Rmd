@@ -1,7 +1,7 @@
 ---
 title: "Computational Musicology"
 author: "Amber Kusters"
-date: '2023-03-12'
+date: '2023-03-31'
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
@@ -28,105 +28,218 @@ library(shiny)
 library(knitr)
 library(grid)
 library(compmus)
+library(tidymodels)
+library(ggdendro)
 ```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### Week 11: Low or high tempo?
-```{r tempogram, echo=FALSE}
-superficiallove <- get_tidy_audio_analysis("5hwh37sTi84MVhCBMWzhGE")
-superficiallove |>
-  tempogram(window_size = 4, hop_size = 2, cyclic = TRUE) |>
-  ggplot(aes(x = time, y = bpm, fill = power)) +
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +
-  labs(x = "Time (s)", y = "Tempo (BPM)") +
-  theme_classic()
-```
-
-***
-
-I discovered that the song with the lowest tempo classified by Spotify in my corpus is Superficial Love by Ruth B. Spotify's API shows that this song has 43.509 BPM. I was interested in what the tempogram would look like, and whether it was able to get close to 43 BPM. As you can see on the left side, this is sadly not the case. It surprised me that the tempogram actually shows the BPM to be very high, around 150 BPM. When listening to the song, the melody of the piano is very slow. However, I think the tempogram focuses too much on her singing, which causes the tempo to be high.
-
-<iframe src="https://open.spotify.com/embed/track/5hwh37sTi84MVhCBMWzhGE" width="100%" height="85" frameBorder="0" allowtransparency="true" allow="encrypted-media" data-external="1"></iframe>
+Complete corpus {.storyboard}
+===================================================
 
 ### Corpus
-When you are feeling down it is comforting to listen to sad music as it matches your mood. Sometimes the music can make you feel less alone or it feels like someone else relates to your problems. The corpus I chose is a playlist full of sad songs. A very good playlist of a friend of mine called "Sad *itch Hours" is a playlist with 203 sad songs. I find it interesting that there are also different playlists by Spotify that focus on sad music, but also differentiate in, for example, heartbreak or just having a bad day. I am interested to learn what makes a playlist a sad playlist? To do this, I choose to include the Spotify playlist "Life Sucks" in my corpus, which has 200 sad songs. In contrast to this I would also like to add playlists focussed on happy moods to my corpus, to look at the differences between happy and sad music. This will include "Happy Favorites" and "Wake Up Happy", which are both playlists made by Spotify and containing 150 songs each. All playlist included in this corpus contain songs of various genres and artists, not focussing on one specific genre.
+When you are feeling down it is comforting to listen to sad music as it matches your mood. Sometimes the music can make you feel less alone or it feels like someone else relates to your problems. The corpus I chose is a playlist full of sad songs. My favorite sad playlist is called "Sad Bitch Hours", which was created by a friend of mine and it is a playlist with 203 sad songs. I find it interesting that there are also different playlists by Spotify that focus on sad music, but also differentiate in types of sadness, for example, heartbreak or just having a bad day. In this portfolio I want to compare my friends playlist to a Spotify playlist to see whether there are clear differences or similarities. Maybe I will be able to discover why I enjoy listening to her playlist more than the one Spotify created. To do this, I choose to include the Spotify playlist "Life Sucks" in my corpus, which has 200 sad songs. All playlist included in this corpus contain songs of various genres and artists, not focusing on one specific genre.
 
-The natural groups I would like to investigate in the sad playlist is artists and valence of songs. It is interesting to see which artist has the most songs in the sad playlists and whether an artist might be more diverse by having both happy and sad songs. Futhermore, focussing on the difference between the spotify generated playlist and the one of my friend, to see if there is anything that stands out. Additionally, I would like to see whether there are factors that influence valence, for example, danceability or speechiness, and to compare this with happy and sad music.
+The natural groups I would like to investigate in the sad playlist are the different features, like valence, tempo, and energy of songs. It is interesting to focus on the difference between the Spotify generated playlist and the one of my friend, to see if there is anything that stands out. Additionally, I would like to see whether there are factors that influence valence, for example, danceability or speechiness, or tempo.
 
-I believe the tracks in my corpus are very representative as the playlist "Sad *itch Hours" has a very diverse group of artists and therefore also genres. However, it does miss genres like country or metal sad music, as most songs are slow hip-hop, r&b or pop songs. The playlist generated by Spotify of sad and happy music are also very broad, but do focus on music that is more recent, and don't include many old songs. I chose playlists that are not focussed on one specific genre to make a better comparison.
+I believe the tracks in my corpus are very representative as the playlist "Sad *itch Hours" has a very diverse group of artists and therefore also genres. However, it does miss genres like country or metal sad music, as most songs are slow hip-hop, r&b or pop songs. The playlist generated by Spotify 'Life Sucks' is also very broad, but does focus on music that is more recent, and doesn't include many old songs. I chose playlists that are not focused on one specific genre to make a better comparison.
 
-Typical tracks in my corpus for sad songs are Don't Speak by No Doubt, songs by Billie Eilish, Lana del Rey, or Adele. Looking at the happy playlist by Spotify, it varies a lot from feel good songs to real party anthems.
+Typical tracks in my corpus for sad songs are Don't Speak by No Doubt, songs by Billie Eilish, Lana del Rey, or Adele.
 
 ### Which playlist is more sad? {data-commentary-width=600}
 
 ```{r load playlists, echo=FALSE}
 sadplaylist <- get_playlist_audio_features("", "3h7anos6b21Kvv7N5Sj9v6")
 sadspotify <- get_playlist_audio_features("", "37i9dQZF1DX3YSRoSdA634")
-happyspotify <- get_playlist_audio_features("", "37i9dQZF1DWZKuerrwoAGz")
-happyspotify2 <- get_playlist_audio_features("", "37i9dQZF1DX0UrRvztWcAU")
+billboard200 <- get_playlist_audio_features("", "5VFjprCLCaXC6sTTUbrIj5")
 ```
 
 ```{r combine datasets, echo=FALSE}
 sadsongs <-
   bind_rows(
-    sadplaylist |> mutate(category = "Sad *itch Hours Playlist"),
+    sadplaylist |> mutate(category = "Sad Bitch Hours Playlist"),
     sadspotify |> mutate(category = "Life Sucks Playlist")
   )
-happysongs <-
-  bind_rows(
-    happyspotify |> mutate(category = "Happy Favorites"),
-    happyspotify2 |> mutate(category = "Wake Up Happy")
-  )
 
-allsongs <-
+
+histosongs <-
   bind_rows(
-    sadplaylist |> mutate(category = "Sad"),
-    sadspotify |> mutate(category = "Sad"),
-    happyspotify |> mutate(category = "Happy"),
-    happyspotify2 |> mutate(category = "Happy")
+    sadplaylist |> mutate(category = "Sad Bitch Hours Playlist"),
+    sadspotify |> mutate(category = "Life Sucks Playlist"),
+    billboard200 |> mutate(category = "Billboard Global 200")
   )
 
 ```
 
 ```{r histogram valence, echo=FALSE}
 sad_histogram <-
-  ggplot(sadsongs, aes(x = valence)) +
+  ggplot(histosongs, aes(x = valence)) +
   geom_histogram(binwidth = 0.1,color="black", fill="lightblue") +
   facet_wrap(~category) + 
   theme_light() +
-  labs(title="Distribution of valence in sad playlists",
+  labs(title="Distribution of valence in sad playlists, and compared to Top 200",
     x = "Valence",
     y = "Count")
 ggplotly(sad_histogram)
 ```
 ***
-To start off I wanted to see what the level of valence is according to Spotify in the two sad playlists. I used the histogram to focus on only one feature. According to Spotify, valence describes the musical positiveness of a song from 0 to 1, meaning more negative and more positive respectively. This figure shows that the playlist made by Spotify ("Life Sucks") is slightly more positive than the one my friend made, as it contains more songs with a higher valence value.
+To start off I wanted to see what the level of valence is according to Spotify in the two sad playlists. I used the histogram to focus on only one feature. According to Spotify, valence describes the musical positiveness of a song from 0 to 1, meaning more negative and more positive respectively. This figure shows that the playlist made by Spotify ("Life Sucks") is slightly more positive than the one my friend made, as it contains more songs with a higher valence value. For comparison I added a histogram of the Billboard Global 200 songs. This playlist includes the Top 200 songs globally at this moment. Comparing the two sad playlist to the more general playlist, it shows that the sad  playlists are significantly sadder than a general playlist, as they contain less songs with high valence.
 
 * Sad *itch Hours contains 203 songs
 * Life Sucks, generated by Spotify contains 200 songs
+* Billboard Global 200 contains 200 songs
 
 <iframe src="https://open.spotify.com/embed/playlist/37i9dQZF1DX3YSRoSdA634" width="50%" height="100%" frameBorder="0" allowtransparency="true" allow="encrypted-media" data-external="1"></iframe>
 
 <iframe src="https://open.spotify.com/embed/playlist/3h7anos6b21Kvv7N5Sj9v6" width="50%" height="100%" frameBorder="0" allowtransparency="true" allow="encrypted-media" data-external="1"></iframe>
 
 
-### Happy playlist vs. Sad playlist
+### How much energy do the playlists give?
 
 ```{r, echo=FALSE}
-happy_sad_scatter <-
-  ggplot(allsongs, aes(x=valence, y=danceability, color=category, size=energy)) +
-  geom_point(alpha=0.6) + theme_light() + 
-  scale_color_manual(values = c("#FF9999", "lightblue")) +
-  labs(title="Relation between valence, danceability and senergy in happy and sad songs", x="Valence", y="Danceability", size="Energy", colour="Category" )
-ggplotly(happy_sad_scatter)
+sadenergy <-
+  ggplot(histosongs, aes(x = category, y = energy)) +
+  geom_boxplot() +
+  theme_light() +
+  labs(title="Boxplot of energy level in sad playlists, and compared to Top 200",
+    x = "Playlist",
+    y = "Energy")
+ggplotly(sadenergy)
 ```
 ***
 
-Then I wanted to look at the differences between the happy and sad playlists, and look at features that might influence valence. Therefore, this next visualisation includes valence, danceablity and energy. Danceability rates how suitible a song is to dance to (1.0 being very danceable) and energy represents the intensity or activity, which is calculated with loudness, timbre, dynamic range, etc. (1.0 being very energetic). In this visualisation it is seen that the distribution of valence is broad in both happy and sad playlists, but there is also a division showing that overall happy music has higher valence than sad music, which was also expected. It also shows that positive music has a higher danceability, and the energy of positive music is mostly above the 0.50. Whereas only the blue dots (sad songs) have an energy of 0.25.
+When I was thinking about features that are very different in sad music compared to happier music, I immediately thought of energy. Spotify represents energy as a measure of activity and intensity. They give as an example that energetic tracks feel fast, loud, and noisy, which would be the exact opposite of sad music. Therefore, I would expect the sad playlists to score low on energy. To again bring the sad playlists into perspective, I added the Billboard Global 200 to the boxplot. It is seen that the energy level of the Top 200 songs is significantly higher than the ones of the sad playlists. Additionally, a small difference can be seen between the Life Sucks and Sad Bitch Hours playlists. The second one being lower on energy levels. 
+
+
+### Can you dance to sad music?
+
+```{r, echo=FALSE}
+scatterdance <-
+  ggplot(sadsongs, aes(x=valence, y=danceability, size=energy)) +
+  geom_point(alpha=0.6) + theme_light() + 
+  geom_smooth() +
+  labs(title="Relation between valence, danceability and energy in sad songs", x="Valence", y="Danceability", size="Energy")
+ggplotly(scatterdance)
+
+```
+***
+
+The purpose of listening to sad songs is mostly not to dance to it, there is a higher possibility to cry to it. Therefore, I wanted to see what Spotify would think of the dancebility of sad songs. I combined the Life Sucks and Sad Bitch Hours playlist and plotted them in a scatter plot. In my opinion, some songs have a pretty high danceability score for a sad song, as the song with the highest dancebility happens to have a rather low valence. I also added a trend line, to show that the danceability does increase when the valence is higher. As most songs have a low valence, they have a relatively low danceability.
+
+### Timbre coefficients in sad playlists
+
+```{r, echo = FALSE}
+sadbitchhours <-
+  get_playlist_audio_features(
+    "thesoundsofspotify",
+    "3h7anos6b21Kvv7N5Sj9v6"
+  ) |>
+  slice(1:30) |>
+  add_audio_analysis()
+lifesucks <-
+  get_playlist_audio_features(
+    "thesoundsofspotify",
+    "37i9dQZF1DX3YSRoSdA634"
+  ) |>
+  slice(1:30) |>
+  add_audio_analysis()
+sadplaylists <-
+  sadbitchhours |>
+  mutate(genre = "Sad *itch Hour") |>
+  bind_rows(lifesucks |> mutate(genre = "Life Sucks"))
+
+sadplaylists |>
+  mutate(
+    timbre =
+      map(
+        segments,
+        compmus_summarise,
+        timbre,
+        method = "mean"
+      )
+  ) |>
+  select(genre, timbre) |>
+  compmus_gather_timbre() |>
+  ggplot(aes(x = basis, y = value, fill = genre)) +
+  geom_violin() +
+  scale_fill_viridis_d() +
+  labs(x = "Spotify Timbre Coefficients", y = "", fill = "Playlist")
+```
+
+***
+This week assignment is this page and the next!
+
+The graph on the left compares the two sad playlists by looking at the timbre coefficients that Spotify uses. On most of these coefficients, it looks like the playlist are fairly similar, only deviating a little bit. However, when looking at the second timbre coefficient, it comes to my attention that the Life Sucks playlist, created by Spotify has a bigger range of brightness. The documentation that explains a part of the timbre coefficients refers to this second coefficient as brightness. This would mean that the Life Sucks playlist has more songs that are interpreted as brighter than the Sad Bitch Hour playlist. This actually also confirms that the playlist created by Spotify contains more happier songs than the one created by my friend. This was also shown in the first histogram of the complete corpus, where the valence was higher in the Life Sucks playlist. This difference in the coefficient is very small, and not that significant, but this plot does give a clear overview of the distribution of the different timbre coefficents. 
+
+### Hierarchical clustering Sad Bitch Hours
+
+```{r clustering, echo=FALSE}
+halloween <-
+  get_playlist_audio_features("bnfcollection", "3h7anos6b21Kvv7N5Sj9v6") |>
+  add_audio_analysis() |>
+  mutate(
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  ) |>
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+  mutate_at(vars(pitches, timbre), map, bind_rows) |>
+  unnest(cols = c(pitches, timbre))
+
+unique_halloween <- halloween[!duplicated(halloween$track.name), ]
+
+halloween_juice <-
+  recipe(
+    track.name ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 +
+      c07 + c08 + c09 + c10 + c11 + c12,
+    data = unique_halloween
+  ) |>
+  step_center(all_predictors()) |>
+  step_scale(all_predictors()) |> 
+  # step_range(all_predictors()) |> 
+  prep(unique_halloween |> mutate(track.name = str_trunc(track.name, 20))) |>
+  juice() |>
+  column_to_rownames("track.name")
+
+halloween_dist <- dist(halloween_juice, method = "euclidean")
+
+halloween_dist |> 
+  hclust(method = "complete") |> # Try single, average, and complete.
+  dendro_data() |>
+  ggdendrogram()
+```
+
+***
+
+This hierarchical clustering is done with complete linkage. This created the best parsed tree. I would say this clustering went quite well. I listened to a couple of the songs that were clustered together and the sound of the clusters fit well together. For example, Trouble by Coldplay and I'm In Here by Sia, sound very alike and are clustered together at the right side. Also two songs clustered more in the center, Sorry by Halsey and Like Everybody Else by Lennon Stella sound very similar. In my opinion this is mostly related to tempo and the kind of instruments used in the songs.
+
+Highlighted songs {.storyboard}
+===================================================
 
 ### Another Love Chromagram {data-commentary-width=500}
 
@@ -157,7 +270,7 @@ anotherlove_chroma
 
 ***
 
-This chromagram resembles the song Another Love by Tom Odell. A song that is more than 10 years old, but gained popularity in 2022 due to TikTok. It is a song that is part of the sad songs corpus. What I find interesting about this chromagram is how it starts off with more indiviual notes, but around 100 seconds in, there is a change. This is when the choir starts singing in the song and the tempo speeds up. In the chromagram it looks like the notes are more blurry and blend into each other. 
+This chromagram resembles the song Another Love by Tom Odell. A song that is more than 10 years old, but gained popularity in 2022 due to TikTok. It is a song that is part of the sad songs corpus. What I find interesting about this chromagram is how it starts off with more individual notes, but around 100 seconds in, there is a change. This is when the choir starts singing in the song and the tempo speeds up. In the chromagram it looks like the notes are more blurry and blend into each other. As a choir contains different voices, there is also a bigger range of frequencies, which could explain the blurring. 
 
 <iframe src="https://open.spotify.com/embed/track/3JvKfv6T31zO0ini8iNItO" width="100%" height="85" frameBorder="0" allowtransparency="true" allow="encrypted-media" data-external="1"></iframe>
 
@@ -209,56 +322,13 @@ bind_rows(
 ```
 
 ***
-The new addition for week 9. On the left you can see two self-similarity matrices for Carry You by Novo Amor. This song is the saddest song in the corpus, with a valence of 0.035, originated from the Life Sucks playlist of Spotify. When listening to the song for the first time it feels like it is pretty consistent throughout, but the matrices do show some patterns. Looking at the chroma self-similarity matrix, it shows that the first 90 seconds are rather similar, but the timbre matrix already shows a change around 40 seconds. The artist starts singing around this time, so that explains the change in timbre. From 90 seconds on wards, new background instruments are added and therefore both matrices form a new block. This continues until the cross at 180 seconds. This change in timbre and chroma is caused by the almost silence as the music decreases and abruptly starts again after a few seconds. Overall the piece is quite repetitive, but the minor changes make it more interesting to listen to.
+On the left you can see two self-similarity matrices for Carry You by Novo Amor. This song is the saddest song in the corpus, with a valence of 0.035, originated from the Life Sucks playlist of Spotify. When listening to the song for the first time it feels like it is pretty consistent throughout, but the matrices do show some patterns. Looking at the chroma self-similarity matrix, it shows that the first 90 seconds are rather similar, but the timbre matrix already shows a change around 40 seconds. The artist starts singing around this time, so that explains the change in timbre. From 90 seconds on wards, new background instruments are added and therefore both matrices form a new block. This continues until the cross at 180 seconds. This change in timbre and chroma is caused by the almost silence as the music decreases and abruptly starts again after a few seconds. Overall the piece is quite repetitive, but the minor changes make it more interesting to listen to.
 
 <iframe src="https://open.spotify.com/embed/track/0u4rkpmNtgcFxYHepnVF4v" width="100%" height="85" frameBorder="0" allowtransparency="true" allow="encrypted-media" data-external="1"></iframe>
 
-### Week 10: Timbre coefficients in sad playlists
 
-```{r, echo = FALSE}
-sadbitchhours <-
-  get_playlist_audio_features(
-    "thesoundsofspotify",
-    "3h7anos6b21Kvv7N5Sj9v6"
-  ) |>
-  slice(1:30) |>
-  add_audio_analysis()
-lifesucks <-
-  get_playlist_audio_features(
-    "thesoundsofspotify",
-    "37i9dQZF1DX3YSRoSdA634"
-  ) |>
-  slice(1:30) |>
-  add_audio_analysis()
-sadplaylists <-
-  sadbitchhours |>
-  mutate(genre = "Sad *itch Hour") |>
-  bind_rows(lifesucks |> mutate(genre = "Life Sucks"))
 
-sadplaylists |>
-  mutate(
-    timbre =
-      map(
-        segments,
-        compmus_summarise,
-        timbre,
-        method = "mean"
-      )
-  ) |>
-  select(genre, timbre) |>
-  compmus_gather_timbre() |>
-  ggplot(aes(x = basis, y = value, fill = genre)) +
-  geom_violin() +
-  scale_fill_viridis_d() +
-  labs(x = "Spotify Timbre Coefficients", y = "", fill = "Playlist")
-```
-
-***
-This week assignment is this page and the next!
-
-The graph on the left compares the two sad playlists by looking at the timbre coefficients that Spotify uses. On most of these coefficients, it looks like the playlist are fairly similar, only deviating a little bit. However, when looking at the second timbre coefficient, it comes to my attention that the Life Sucks playlist, created by Spotify has a bigger range of brightness. The documentation that explains a part of the timbre coefficients refers to this second coefficient as brightness. This would mean that the Life Sucks playlist has more songs that are interpreted as brighter than the Sad Bitch Hour playlist. This actually also confirms that the playlist created by Spotify contains more happier songs than the one created by my friend, which was also displayed in the histogram comparing which playlist is more sad.
-
-### Week 10: Consistent keygrams {data-commentary-width=500}
+### Consistent keygrams {data-commentary-width=500}
 ```{r templates, echo = FALSE}
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
@@ -378,7 +448,35 @@ keygramkrezip
 
 ***
 
-It stood out that when looking at different keygrams for sad music, there isn't much variation in the key throughout the song. This graphs gives an example, showing that the majority is in D major key. It is a keygram of I Would Stay by Krezip, which is a very famous sad song in the Netherlands. In my final portfolio I will try to show multiple keygrams from the sad playlist to give a more complete view of the consistancy in key throughout the songs.
+It stood out that when looking at different keygrams for sad music, there isn't much variation in the key throughout the song. This graphs gives an example, showing that the majority is in D major key. It is a keygram of I Would Stay by Krezip, which is a very famous sad song in the Netherlands. 
 
 <iframe src="https://open.spotify.com/embed/track/3GZFKiGVYv3SBQ6PLf3JgF" width="100%" height="85" frameBorder="0" allowtransparency="true" allow="encrypted-media" data-external="1"></iframe>
+
+
+### Low or high tempo?
+```{r tempogram, echo=FALSE}
+superficiallove <- get_tidy_audio_analysis("5hwh37sTi84MVhCBMWzhGE")
+superficiallove |>
+  tempogram(window_size = 4, hop_size = 2, cyclic = TRUE) |>
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
+
+***
+
+I discovered that the song with the lowest tempo classified by Spotify in my corpus is Superficial Love by Ruth B. Spotify's API shows that this song has 43.509 BPM. I was interested in what the tempogram would look like, and whether it was able to get close to 43 BPM. As you can see on the left side, this is sadly not the case. It surprised me that the tempogram actually shows the BPM to be very high, around 150 BPM. When listening to the song, the melody of the piano is very slow. However, I think the tempogram focuses too much on her singing, which causes the tempo to be high. When I tried tapping with an online metronome, it also felt more natural around 40 BPM than 150 BPM. 
+
+<iframe src="https://open.spotify.com/embed/track/5hwh37sTi84MVhCBMWzhGE" width="100%" height="85" frameBorder="0" allowtransparency="true" allow="encrypted-media" data-external="1"></iframe>
+
+Conclusion {.storyboard}
+===================================================
+
+### Conclusion
+
+To conclude, I looked at different features of the sad playlists generated by Spotify and my friend. Then I also zoomed in on some outliers and songs that I liked from the corpus. It came to my attention that the Life Sucks playlist contains a little bit happier songs than the Sad Bitch Hours, which is not necessarily what I expected. As the title Life Sucks, sounds way more melodramatic than Sad Bitch Hour. However, it does explain why I prefer the Sad Bitch Hours playlist over Life Sucks, because when I listen to sad music I want the music to match the sad mood I'm in, and a happy song or more danceable song gives too much of a contrast. Looking at the different features of the whole corpus was interesting and showed some variations. The outliers were also fun to analyse as it made it showed more in-depth information.
+
+
 
